@@ -35,6 +35,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                        sh "sed -i 's|majishms/todo-list:${env.BUILD_NUMBER}|majishms/todo-list:${env.BUILD_NUMBER}|g' k8s/deployment.yaml"
                         sh 'kubectl apply -f k8s/deployment.yaml'
                         sh 'kubectl apply -f k8s/service.yaml'
                     }
