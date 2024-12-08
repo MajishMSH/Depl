@@ -15,7 +15,7 @@ spec:
       containers:
       - name: todo-list
         # Replace 'majishms/todo-list:${env.BUILD_NUMBER}' with the actual Nexus registry path
-        image: 10.9.50.46:8085/majishms/todo-list:${env.BUILD_NUMBER}
+        image: "10.9.50.46:8085/majishms/todo-list:${env.BUILD_NUMBER}"
         ports:
         - containerPort: 80
       imagePullSecrets:
