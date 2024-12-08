@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: todo-list-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: todo-list
@@ -14,9 +14,8 @@ spec:
     spec:
       containers:
       - name: todo-list
-        # Replace 'majishms/todo-list:${env.BUILD_NUMBER}' with the actual Nexus registry path
-        image: 10.9.50.46:8085/repository/majishms/todo-list:${BUILD_NUMBER}
+        image: majishms/todo-list:${env.BUILD_NUMBER}
         ports:
         - containerPort: 80
       imagePullSecrets:
-      - name: nexus-credentials  # Replace with your actual secret name in Kubernetes
+      - name: dockerhublogin
