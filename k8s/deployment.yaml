@@ -19,4 +19,4 @@ spec:
         ports:
         - containerPort: 80
       imagePullSecrets:
-      - name: nexus-credentials  # Replace with your actual secret name in Kubernetes
+      - name: nexus-secret  # Replace with your actual secret name in Kubernetes
