@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'todo-list'
+        REGISTRY = '10.9.50.46:8085'
+        REPO = 'majishms'
+        NEXUS_CREDENTIALS = 'nexus-credentials'  // Replace with your Jenkins Nexus credentials ID
+        HTTP_PROXY = 'http://10.9.50.32:3128'  // Add your proxy server details
+        HTTPS_PROXY = 'http://10.9.50.32:3128'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/MajishMSH/Depl.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                    docker build \
+                        --build-arg HTTP_PROXY=${HTTP_PROXY} \
+                        --build-arg HTTPS_PROXY=${HTTPS_PROXY} \
+                        -t ${REGISTRY}/${REPO}/${DOCKER_IMAGE}:${env.BUILD_NUMBER} .
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image to Nexus') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                        // Login to Nexus without --password-stdin
+                        sh "docker login ${REGISTRY} --username ${NEXUS_USER} --password ${NEXUS_PASS}"
+
+                        // Push image to Nexus repository
+                        sh "docker push ${REGISTRY}/${REPO}/${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                        sh "sed -i 's|10.9.50.46:8085/majishms/todo-list:1|${REGISTRY}/${REPO}/${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' k8s/deployment.yaml"
+                        sh 'kubectl apply -f k8s/deployment.yaml'
+                        sh 'kubectl apply -f k8s/service.yaml'
+                    }
+                }
+            }
+        }
+    }
+}
