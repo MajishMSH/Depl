@@ -18,5 +18,3 @@ spec:
         image: 10.9.50.46:8085/majishms/todo-list:${env.BUILD_NUMBER}
         ports:
         - containerPort: 80
-      imagePullSecrets:
-      - name: nexus-secret  # Replace with your actual secret name in Kubernetes
